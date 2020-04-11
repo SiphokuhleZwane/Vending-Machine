@@ -1,99 +1,107 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class stock {
 		
 		private String fn;
-		private static BufferedReader br = null;
+		ArrayList<String> list =  new ArrayList<>();
 		
 		public stock (String fn) {
 			this.fn = fn;
-			
+			fileOpener();
 		}
 		
 		public void fileOpener() {
 			try {	
-			br = new BufferedReader(new FileReader(fn));
+			BufferedReader br = new BufferedReader(new FileReader(fn));
+			String line;
+				while ((line = br.readLine()) != null) {
+					//attributes = line.split(",");
+					list.add(line);
+				}
+			br.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		
 		public void Menu() {
-			fileOpener();
 			System.out.println("\nMenu");
-			String line, attributes[];
 			int count = 1;
-			try {
-				while ((line = br.readLine()) != null) {
-					attributes = line.split(",");
-					System.out.println(count + ") " + attributes[0] + ":\t" + "R" + attributes[1]);
-					count++;			
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
+			for (String line: list) {
+				String[] attributes = line.split(",");
+				System.out.println(count + ") " + attributes[0] + ":\t" + "R" + attributes[1]);
+				count++;			
 			}
 		}
 		
 		public int availability(int num, int amount) {
-			fileOpener();
-			String line, attributes[];
-			int count = 1;
-			try {
-				while ((line = br.readLine()) != null) {
-					if (count == num) {
-						attributes = line.split(",");
-						if (Integer.parseInt(attributes[1]) > amount) {
-							return -1;
-						}
-						else if (Integer.parseInt(attributes[2]) == 0) {
-							return 0;
-						}
-						else {
-							System.out.println("\nPlease collect your: " + attributes[0]);
-						/*
-						 * BufferedWriter bw = new BufferedWriter(new FileWriter(fn)); String putData;
-						 * int i = line.lastIndexOf(","); int stockVal =
-						 * Integer.parseInt(line.substring(i+1)) -1; putData = line.substring(0,i+1) +
-						 * stockVal; bw.write(putData); bw.close();
-						 */
-							
-							return Integer.parseInt(attributes[1]);
-						}
-					}
-					count++;
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
+			if (num == 0)
+				return -2;
+			else if (num > list.size() || num < 0){
+				return -3;
 			}
 			
-			return -2;
+			int count = 1;
+			String[] attributes = null;
+			for (String line: list) {
+				attributes = line.split(",");
+				if (count == num) {
+					if (Integer.parseInt(attributes[1]) > amount) {
+						return -1;
+					}
+					else if (Integer.parseInt(attributes[2]) == 0) {
+						return 0;
+					}
+					else {
+						System.out.println("\nPlease collect: " + attributes[0]);
+						//return Integer.parseInt(attributes[1]);
+					}
+				}
+				count++;
+			}
+			return Integer.parseInt(attributes[1]);
+	
 		}
 		
 		public void stockChange(int num) {
-			try{
-				BufferedWriter bw = new BufferedWriter(new FileWriter(fn)); 
-				String line, putData;
+			try {
+				BufferedWriter bw = new BufferedWriter(new FileWriter("temp.csv")); 
+				String putData;
 				int count = 1;
-				while ((line = br.readLine()) != null) {
+				for (String line: list) {
 					if (count == num) {
 						int i = line.lastIndexOf(",");
 						int stockVal = Integer.parseInt(line.substring(i+1)) -1;
 						putData = line.substring(0,i+1) + stockVal;
-						bw.write(putData);
-						bw.close();
+						list.set(count-1, putData);
+						bw.write(putData+"\n");
+						count++;
+					}
+					else {
+						bw.write(line+"\n");
+						count++;
 					}
 				}
-				br.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				bw.flush();
+				bw.close();
+			}catch (IOException e) {
 				e.printStackTrace();
 			}
-             
+			
+			// delete product file..
+	        File oldFile = new File(fn);
+	        oldFile.delete();
 
+	        // renaming tmp file name to product name
+	        File newFile = new File("temp.csv");
+	        newFile.renameTo(oldFile);
+			
 		}
 		
 		
