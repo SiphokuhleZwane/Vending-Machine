@@ -41,10 +41,13 @@ public class VendingMachine {
 		int input2 = -1;
 		
 		do {
-			System.out.println("\nPlease pick numebr (enter zero to exit):");
+			System.out.println("\nPlease pick number (enter zero to exit):");
 			input2 = scan.nextInt();
 			int result = st.availability(input2, amount);
 			switch (result) {
+				case -3:
+					System.out.println("Number doesn't exist");
+					break;
 				case -2:
 					System.out.println("Exiting Vending Machine");
 					break;
